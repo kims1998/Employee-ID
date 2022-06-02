@@ -1,142 +1,192 @@
-const inquirer = require('inquirer');
-const generateHtml = require('./lib/generateHtml');
+// Import packages
+const inquirer = require("inquirer");
+const fs = require("fs");
 
-const Intern = require('./lib/Intern');
+// Import classes
+const Employee = require('./lib/Employee');
 const Engineer = require('./lib/Engineer');
+const Intern = require('./lib/Intern');
 const Manager = require('./lib/Manager');
 
-const theEmployees = [];
+// Import HTML templates
+const addManagerCard = require('./src/card-manager');
+const addEngineerCard = require('./src/card-engineer');
+const addInternCard = require('./src/card-intern');
+const wrapProfileCards = require('./src/card-wrapper');
 
+// Team members start off as an empty array
+const team = [];
 
-function theTeam() {
-    inquirer.prompt([
-        {
+// Add manager
+const addManager = [
+    {
+        name: 'role',
+        type: 'confirm',
+        message: 'Welcome to the Team Profile Generator! Are you ready to begin?',
+      },
+      {
+        name: 'name',
+        type: 'input',
+        message: 'Please enter the name of the manager:'
+      },
+      {
+        name: 'id',
+        type: 'input',
+        message: 'What is your employee ID?'
+      },
+      {
+        name: 'email',
+        type: 'input',
+        message: 'Please enter your email address:'
+      },
+      {
+        name: 'officeNumber',
+        type: 'input',
+        message: 'What is your office number?'
+      },
+      {
+        name: 'upNext',
         type: 'list',
-        message: "Would you like to add a new employee?",
-        name: 'createEmployee',
-        choices: ['Intern', 'Engineer', 'That is all'],
-        },
-    ])
-    .then((res) => {
-        console.log(res);
-        if(res.createEmployee == 'Intern') {
+        choices: ['Add Engineer', 'Add Intern', 'My team is complete!'],
+        message: 'What would you like to do next?',
+      },
+];
 
-            theIntern();
-        };
+// Add new engineer
+const addEngineer = [
+    {
+      name: 'name',
+      type: 'input',
+      message: "Please enter the name of the engineer:"
+    },
+    {
+      name: 'id',
+      type: 'input',
+      message: "Please enter the ID of the engineer:"
+    },
+    {
+      name: 'email',
+      type: 'input',
+      message: "What is the engineer's email address?"
+    },
+    {
+      name: 'github',
+      type: 'input',
+      message: "Please enter the engineer's Github username:"
+    },
+    {
+      name: 'upNext',
+      type: 'list',
+      choices: ['Add Engineer', 'Add Intern', 'My team is complete!'],
+      message: 'What would you like to do next?',
+    },
+  ];
 
-        if(res.createEmployee == 'Engineer') {
+  // Add intern
+  const addIntern = [
+    {
+      name: 'name',
+      type: 'input',
+      message: "What is the intern's name?"
+    },
+    {
+      name: 'id',
+      type: 'input',
+      message: "What is the intern's employee ID?"
+    },
+    {
+      name: 'email',
+      type: 'input',
+      message: "Please enter the intern's email address:"
+    },
+    {
+      name: 'school',
+      type: 'input',
+      message: "What college or university does the intern attend?"
+    },
+    {
+      name: 'upNext',
+      type: 'list',
+      choices: ['Add Engineer', 'Add Intern', 'My team is complete!'],
+      message: 'What would you like to do next?',
+    },
+  ];
+  
+// Initialize application
+ask(addManager);
 
-            theEngineer();
-        };
+// Cycle through questions if member needs to be added
+function ask(questionArr) {
+    inquirer
+      .prompt(questionArr)
+      .then((member) => {
+        team.push(member);
+  
+        if (member.upNext === 'Add Engineer') {
+          ask(addEngineer);
+        } else if (member.upNext === 'Add Intern') {
+          ask(addIntern);
+        } else {
+          createProfiles(team);
+        }
+      })
+      .catch((err) => console.log(err));
+  }
 
-        if(res.createEmployee == 'That is all') {
-            console.log(theEmployees);
 
-            createHtml();
-        };
-    })
-};
-
-function theIntern() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            message: "What is the Intern's name?",
-            name: 'iName',
-        },
-        {
-            type: 'input',
-            message: "What is the intern's ID?",
-            name: 'iId',
-        },
-        {
-            type: 'input',
-            message: 'What is their email?',
-            name: 'iEmail',
-        },
-        {
-            type: 'input',
-            message: 'What school does the intern attend currently? ',
-            name: 'school',
-        },
-    ])
-    .then((res) => {
-        console.log(res)
-        const intern = new Intern (res.iName, res.iId, res.iEmail, res.school);
-        theEmployees.push(intern);
-
-        theTeam();
+function createProfiles(team) {
+    
+    const profiles = team.map((member) => {
+      const { name, id, email } = member;
+  
+      // If you're adding a manager, ask for office number
+      if (member.hasOwnProperty('officeNumber')) {
+        const { officeNumber } = member;
+        return new Manager(name, id, email, officeNumber);
+      }
+  
+      // if you're adding an engineer, as for github
+      if (member.hasOwnProperty('github')) {
+        const { github } = member;
+        return new Engineer(name, id, email, github);
+      }
+  
+     // if you're adding an intern, ask for school
+      if (member.hasOwnProperty('school')) {
+        const { school } = member;
+        return new Intern(name, id, email, school);
+      }
     });
+  
+    // Generate HTML from the profiles made
+    generateHtml(profiles);
+  }
+
+  function generateHtml(profiles) {
+      let profileCards = '';
+      profiles.forEach((profile) => {
+        if (profile instanceof Manager) {
+          const card = addManagerCard(profile);
+          profileCards += card;
+        } else if (profile instanceof Engineer) {
+          const card = addEngineerCard(profile);
+          profileCards += card;
+        } else if (profile instanceof Intern) {
+          const card = addInternCard(profile);
+          profileCards += card;
+        }
+  })
+
+
+const newHtml = wrapProfileCards(profileCards);
+
+writeHtml(newHtml);
 };
 
-function theEngineer() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            message: "What is the Engineer's name?",
-            name: 'eName',
-        },
-        {
-            type: 'input',
-            message: "What is the Engineer's ID? ",
-            name: 'eId',
-        },
-        {
-            type: 'input',
-            message: 'What is their email?',
-            name: 'eEmail',
-        },
-        {
-            type: 'input',
-            message: 'What is their GitHub username?',
-            name: 'github',
-        },
-    ])
-    .then((res) => {
-        console.log(res)
-        const engineer = new Engineer (res.eName, res.eId, res.eEmail, res.github);
-        theEmployees.push(engineer);
-
-        theTeam();
+// Function to write the final HTML document in dist folder
+function writeHtml(newHtml) {
+    fs.writeFile('./dist/team-profile.html', newHtml, (err) => {
+      if (err) throw err;
+      console.log('HTML document successfully created in the /dist folder.');
     });
-
-};
-
-function theManager() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            message: "What is the Manager's name?",
-            name: 'mName',
-        },
-        {
-            type: 'input',
-            message: "What is the Manager's ID?",
-            name: 'mId',
-        },
-        {
-            type: 'input',
-            message: 'What is their email?',
-            name: 'mEmail',
-        },
-        {
-            type: 'input',
-            message: 'What is their Office Number?',
-            name: 'officeNum',
-        },
-    ])
-    .then((res) => {
-        console.log(res)
-        const manager = new Manager (res.mName, res.mId, res.mEmail, res.officeNum);
-        theEmployees.push(manager);
-        
-        theTeam();
-    });
-
-};
-
-function createHtml() {
-    generateHtml(theEmployees)
-};
-
-theManager();
+  };
