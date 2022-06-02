@@ -17,7 +17,7 @@ describe("Employee", () => {
 
   
   describe("getName", () => {
-    it("Should return the Employee's name value", () => {
+    it("Should return the Employ name value", () => {
       const employee = new Employee("Charles Kim", 24, "seung.kim1998@gmail.com");
 
       expect(employee.getName()).toEqual("Charles Kim");
@@ -26,16 +26,16 @@ describe("Employee", () => {
 
  
   describe("getId", () => {
-    it("Should return the Employee's id value", () => {
+    it("Should return the Employ id value", () => {
       const employee = new Employee("Charles Kim", 24, "seung.kim1998@gmail.com");
 
-      expect(employee.getID()).toEqual(24);
+      expect(employee.getId()).toEqual(24);
     });
   });
 
 
   describe("getEmail", () => {
-    it("Should return the Employee's email value", () => {
+    it("Should return the Employ email value", () => {
       const employee = new Employee("Charles Kim", 24, "seung.kim1998@gmail.com");
 
       expect(employee.getEmail()).toEqual("seung.kim1998@gmail.com");

@@ -31,7 +31,7 @@ describe("Engineer", () => {
     it("Should return the engineer's id value", () => {
       const engineer = new Engineer("Patrick S", 25, "heWontTellMe@gmail.com", "wontTellMe");
 
-      expect(engineer.getID()).toEqual(25);
+      expect(engineer.getId()).toEqual(25);
     });
   });
 
@@ -49,7 +49,7 @@ describe("Engineer", () => {
     it("Should return the engineer's github value", () => {
       const engineer = new Engineer("Patrick S", 25, "heWontTellMe@gmail.com", "wontTellMe");
 
-      expect(engineer.getGithub()).toEqual("wontTellMe");
+      expect(engineer.getGitHub()).toEqual("wontTellMe");
     });
   });
 

@@ -31,7 +31,7 @@ describe("Intern", () => {
     it("Should return the Intern's id value", () => {
       const intern = new Intern("Sallie Kim", 29, "skim1993@gmail.com", "Virginia Tech");
 
-      expect(intern.getID()).toEqual(29);
+      expect(intern.getId()).toEqual(29);
     });
   });
 

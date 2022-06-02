@@ -1,192 +1,180 @@
-// Import packages
-const inquirer = require("inquirer");
-const fs = require("fs");
+const generateHtml = require('./src/generateHTML');
 
-// Import classes
-const Employee = require('./lib/Employee');
-const Engineer = require('./lib/Engineer');
-const Intern = require('./lib/Intern');
+// team profiles
 const Manager = require('./lib/Manager');
+const Engineer = require('./lib/Engineer');
+const Intern = require('./lib/Intern'); 
 
-// Import HTML templates
-const addManagerCard = require('./src/card-manager');
-const addEngineerCard = require('./src/card-engineer');
-const addInternCard = require('./src/card-intern');
-const wrapProfileCards = require('./src/card-wrapper');
+// node modules 
+const fs = require('fs'); 
+const inquirer = require('inquirer');
 
-// Team members start off as an empty array
-const team = [];
+// team array
+const theTeam = []; 
 
-// Add manager
-const addManager = [
-    {
-        name: 'role',
-        type: 'confirm',
-        message: 'Welcome to the Team Profile Generator! Are you ready to begin?',
-      },
-      {
-        name: 'name',
-        type: 'input',
-        message: 'Please enter the name of the manager:'
-      },
-      {
-        name: 'id',
-        type: 'input',
-        message: 'What is your employee ID?'
-      },
-      {
-        name: 'email',
-        type: 'input',
-        message: 'Please enter your email address:'
-      },
-      {
-        name: 'officeNumber',
-        type: 'input',
-        message: 'What is your office number?'
-      },
-      {
-        name: 'upNext',
-        type: 'list',
-        choices: ['Add Engineer', 'Add Intern', 'My team is complete!'],
-        message: 'What would you like to do next?',
-      },
-];
+// start of manager prompts 
+const addManager = () => {
+    return inquirer.prompt ([
+        {
+            type: 'input',
+            name: 'name',
+            message: 'Who is the manager of this team?', 
+            validate: nameInput => {
+                if (nameInput) {
+                    return true;
+                } else {
+                    console.log ("What is the name of the Manager?");
+                    return false; 
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'id',
+            message: "What is the Manager's ID number?",
+        },
+        {
+            type: 'input',
+            name: 'email',
+            message: "What is the Manager's email address",
+        },
+        {
+            type: 'input',
+            name: 'officeNum',
+            message: "Please enter the manager's office number",
+        },
+    ])
+    .then(managerInput => {
+        const  { name, id, email, officeNum } = managerInput; 
+        const manager = new Manager (name, id, email, officeNum);
 
-// Add new engineer
-const addEngineer = [
-    {
-      name: 'name',
-      type: 'input',
-      message: "Please enter the name of the engineer:"
-    },
-    {
-      name: 'id',
-      type: 'input',
-      message: "Please enter the ID of the engineer:"
-    },
-    {
-      name: 'email',
-      type: 'input',
-      message: "What is the engineer's email address?"
-    },
-    {
-      name: 'github',
-      type: 'input',
-      message: "Please enter the engineer's Github username:"
-    },
-    {
-      name: 'upNext',
-      type: 'list',
-      choices: ['Add Engineer', 'Add Intern', 'My team is complete!'],
-      message: 'What would you like to do next?',
-    },
-  ];
-
-  // Add intern
-  const addIntern = [
-    {
-      name: 'name',
-      type: 'input',
-      message: "What is the intern's name?"
-    },
-    {
-      name: 'id',
-      type: 'input',
-      message: "What is the intern's employee ID?"
-    },
-    {
-      name: 'email',
-      type: 'input',
-      message: "Please enter the intern's email address:"
-    },
-    {
-      name: 'school',
-      type: 'input',
-      message: "What college or university does the intern attend?"
-    },
-    {
-      name: 'upNext',
-      type: 'list',
-      choices: ['Add Engineer', 'Add Intern', 'My team is complete!'],
-      message: 'What would you like to do next?',
-    },
-  ];
-  
-// Initialize application
-ask(addManager);
-
-// Cycle through questions if member needs to be added
-function ask(questionArr) {
-    inquirer
-      .prompt(questionArr)
-      .then((member) => {
-        team.push(member);
-  
-        if (member.upNext === 'Add Engineer') {
-          ask(addEngineer);
-        } else if (member.upNext === 'Add Intern') {
-          ask(addIntern);
-        } else {
-          createProfiles(team);
-        }
-      })
-      .catch((err) => console.log(err));
-  }
-
-
-function createProfiles(team) {
-    
-    const profiles = team.map((member) => {
-      const { name, id, email } = member;
-  
-      // If you're adding a manager, ask for office number
-      if (member.hasOwnProperty('officeNumber')) {
-        const { officeNumber } = member;
-        return new Manager(name, id, email, officeNumber);
-      }
-  
-      // if you're adding an engineer, as for github
-      if (member.hasOwnProperty('github')) {
-        const { github } = member;
-        return new Engineer(name, id, email, github);
-      }
-  
-     // if you're adding an intern, ask for school
-      if (member.hasOwnProperty('school')) {
-        const { school } = member;
-        return new Intern(name, id, email, school);
-      }
+        theTeam.push(manager); 
+        console.log(manager); 
     });
-  
-    // Generate HTML from the profiles made
-    generateHtml(profiles);
-  }
-
-  function generateHtml(profiles) {
-      let profileCards = '';
-      profiles.forEach((profile) => {
-        if (profile instanceof Manager) {
-          const card = addManagerCard(profile);
-          profileCards += card;
-        } else if (profile instanceof Engineer) {
-          const card = addEngineerCard(profile);
-          profileCards += card;
-        } else if (profile instanceof Intern) {
-          const card = addInternCard(profile);
-          profileCards += card;
-        }
-  })
-
-
-const newHtml = wrapProfileCards(profileCards);
-
-writeHtml(newHtml);
 };
 
-// Function to write the final HTML document in dist folder
-function writeHtml(newHtml) {
-    fs.writeFile('./dist/team-profile.html', newHtml, (err) => {
-      if (err) throw err;
-      console.log('HTML document successfully created in the /dist folder.');
+const addTeamMember = () => {
+    console.log(`
+         =================
+    Adding employees to the team
+         =================
+    `);
+
+    return inquirer.prompt ([
+        {
+            type: 'list',
+            message: "Select an option to add to your Team Roster.",
+            name: 'role',
+            choices: ['Engineer', 'Intern'],
+        },
+        {
+            type: 'input',
+            message: "What's the name of the employee?", 
+            name: 'name',
+            validate: nameInput => {
+                if (nameInput) {
+                    return true;
+                } else {
+                    console.log ("What's the name of the employee?");
+                    return false; 
+                };
+            },
+        },
+        {
+            type: 'input',
+            message: "Please enter the employee's ID Number.",
+            name: 'id',
+        },
+        {
+            type: 'input',
+            message: "Please enter the employee's email.",
+            name: 'email',
+        },
+// this portion allows for only when the user selects the Engineer.
+        {
+            type: 'input',
+            message: "Please enter the Engineer's GitHub username.",
+            name: 'gitHub',
+            when: (input) => input.role === "Engineer",
+            validate: nameInput => {
+                if (nameInput ) {
+                    return true;
+                } else {
+                    console.log ("Please enter the Engineer's GitHub username:");
+                };
+            },
+        },
+// this portion allows for only when the user selects the Intern.
+        {
+            type: 'input',
+            message: "What College/University is the Intern currently attending?",
+            name: 'school',
+            when: (input) => input.role === "Intern",
+            validate: nameInput => {
+                if (nameInput) {
+                    return true;
+                } else {
+                    console.log ("What College/University is the Intern currently attending?");
+                };
+            },
+        },
+        {
+            type: 'confirm',
+            message: 'Would you like to add more team members?',
+            name: 'additonalMembers',
+            default: false
+        }
+    ])
+    .then(data => {
+        // data for employee
+        let { name, id, email, role, gitHub, school, additonalMembers } = data; 
+        let employee; 
+
+        if (role === "Engineer") {
+            employee = new Engineer (name, id, email, gitHub);
+
+            console.log(employee);
+
+        } else if (role === "Intern") {
+            employee = new Intern (name, id, email, school);
+
+            console.log(employee);
+        };
+
+        theTeam.push(employee); 
+
+        if (additonalMembers) {
+            return addTeamMember(theTeam); 
+        } else {
+            return theTeam;
+        };
     });
-  };
+
+};
+
+
+// function to generate HTML page file using file system 
+const writeFile = data => {
+    fs.writeFile('./dist/index.html', data, err => {
+        // if there is an error, it will console log "an error was produced" to notify where the error occurred.
+        if (err) {
+            console.log(err, "An error was produced.");
+            return;
+        // If no error is produced and all is successful, it will console.log letting the user know that the index.html file was created and located in the dist folder.
+        } else {
+            console.log("The index.html file has successfully been created. Check it out in the /dist folder!");
+        };
+    });
+}; 
+
+addManager()
+  .then(addTeamMember)
+  .then(theTeam => {
+    return generateHtml(theTeam);
+  })
+  .then(pageHTML => {
+    return writeFile(pageHTML);
+  })
+  .catch(err => {
+ console.log(err);
+  });

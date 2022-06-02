@@ -12,7 +12,7 @@ describe("Manager", () => {
       expect(manager.name).toEqual("Opha Mae Johnson");
       expect(manager.id).toEqual(19);
       expect(manager.email).toEqual("OphaMJ@usmc.com");
-      expect(manager.officeNumber).toEqual(13);
+      expect(manager.officeNum).toEqual(13);
     });
   });
 
@@ -28,7 +28,7 @@ describe("Manager", () => {
     it("Should return the Manager's id value", () => {
       const manager = new Manager("Opha Mae Johnson", 19, "OphaMJ@usmc.com", 13);
 
-      expect(manager.getID()).toEqual(19);
+      expect(manager.getId()).toEqual(19);
     });
   });
 
@@ -44,7 +44,7 @@ describe("Manager", () => {
     it("Should return the Manager's officeNumber value", () => {
       const manager = new Manager("Opha Mae Johnson", 19, "OphaMJ@usmc.com", 13);
 
-      expect(manager.getOffice()).toEqual(13);
+      expect(manager.getOfficeNum()).toEqual(13);
     });
   });
 
